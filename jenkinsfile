@@ -60,7 +60,7 @@ pipeline {
 
                     // Build frontend
                     dir("${FRONTEND_DIR}") {
-                        bat 'npm start'  // Or use "npm start" if you want to start the frontend server
+                        bat 'npm run build'  // Or use "npm start" if you want to start the frontend server
                     }
                 }
             }
