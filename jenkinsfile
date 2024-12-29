@@ -1,76 +1,91 @@
-pipeline{
+pipeline {
     agent any
-    environment{
-        FRONTEND_DIR='frontend'
-        BACKEND_DIR='backend'
-        SONAR_TOKEN = credentials('SonarQube')
+
+    environment {
+        FRONTEND_DIR = 'frontend'
+        BACKEND_DIR = 'backend'
+        SONAR_TOKEN = credentials('SonarQube')  // Make sure your SonarQube token is correctly set in Jenkins credentials
     }
-    stages{
-        stage('Checkout'){
-            steps{
+
+    stages {
+        stage('Checkout') {
+            steps {
                 checkout scm
             }
         }
-        stage('Install Dependencies- Frontend'){
-            dir("${FRONTEND_DIR}"){
-                bat 'npm install'
-            }
-        }
-        stage('Install Dependencies- Backend'){
-            dir("${BACKEND_DIR}"){
-                bat 'npm install'
-            }
-        }
-        stage('SonarQube Analysis'){
-            steps{
-                script{
-                    dir("${FRONTEND_DIR}"){
-                        bat'''
-                        sonar-scanner^
-                        -Dsonar.projectKey=Mern-pipe^
-                        -Dsonar.projectName=Mern-pipe^
-                        -Dsonar.sources=.^
-                        -Dsonar.host.url=http://localhost:9000/^
-                        -Dsonar.token=%SONAR_TOKEN%
-                        '''
-                    }
-                    dir("${BACKEND_DIR}"){
-                        bat'''
-                        sonar-scanner^
-                        -Dsonar.projectKey=Mern-pipe^
-                        -Dsonar.projectName=Mern-pipe^
-                        -Dsonar.sources=.^
-                        -Dsonar.host.url=http://localhost:9000/^
-                        -Dsonar.token=%SONAR_TOKEN%
-                        '''
-                    }
+
+        stage('Install Dependencies - Frontend') {
+            steps {
+                dir("${FRONTEND_DIR}") {
+                    bat 'npm install'
                 }
             }
         }
-        stage('Build'){
-            steps{
-                script{
-                    dir("${BACKEND_DIR}"){
-                        bat 'npm run'
+
+        stage('Install Dependencies - Backend') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    bat 'npm install'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // SonarQube analysis for frontend
+                    dir("${FRONTEND_DIR}") {
+                        bat """
+                        sonar-scanner ^
+                        -Dsonar.projectKey=Mern-pipe-front ^
+                        -Dsonar.projectName=Mern-pipe-front ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.token=${SONAR_TOKEN}
+                        """
                     }
-                    dir("${FRONTEND_DIR}"){
-                        bat 'npm start'
+
+                    // SonarQube analysis for backend
+                    dir("${BACKEND_DIR}") {
+                        bat """
+                        sonar-scanner ^
+                        -Dsonar.projectKey=Mern-pipe-back ^
+                        -Dsonar.projectName=Mern-pipe-back ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.token=${SONAR_TOKEN}
+                        """
                     }
                 }
             }
         }
 
+        stage('Build') {
+            steps {
+                script {
+                    // Build backend
+                    dir("${BACKEND_DIR}") {
+                        bat 'npm run build'  // Make sure this is the correct script (like "npm run build")
+                    }
+
+                    // Build frontend
+                    dir("${FRONTEND_DIR}") {
+                        bat 'npm run build'  // Or "npm start" if you want to start the server
+                    }
+                }
+            }
+        }
     }
 
-}
-post{
-    always{
-         echo 'Pipeline execution finished'
-    }
-    success{
-        echo 'Pipeline executed successfully'
-    }
-    faliure{
-        echo 'Pipleine failed'
+    post {
+        always {
+            echo 'Pipeline execution finished'
+        }
+        success {
+            echo 'Pipeline executed successfully'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
     }
 }
