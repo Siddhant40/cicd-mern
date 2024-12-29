@@ -4,7 +4,6 @@ pipeline {
     environment {
         FRONTEND_DIR = 'frontend'
         BACKEND_DIR = 'backend'
-        SONAR_TOKEN = credentials('SonarQube')  // Ensure your SonarQube token is correctly set in Jenkins credentials
     }
 
     stages {
@@ -31,16 +30,21 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+              environment {
+                SONAR_TOKEN = credentials('SonarQube')
+            }
             steps {
                 script {
-                    // SonarQube analysis for both frontend and backend together in a single project
-                    bat """
-                    -Dsonar.projectKey=Mern-pipe ^
-                    -Dsonar.projectName=Mern-pipe ^
-                    -Dsonar.sources=${FRONTEND_DIR},${BACKEND_DIR} ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=${SONAR_TOKEN}
-                    """
+
+                        bat """
+                        sonar-scanner ^
+                        -Dsonar.projectKey=Mern-pipe ^
+                        -Dsonar.projectName=Mern-pipe ^
+                        -Dsonar.sources=${FRONTEND_DIR},${BACKEND_DIR} ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.token=${SONAR_TOKEN}
+                        """
+                    
                 }
             }
         }
