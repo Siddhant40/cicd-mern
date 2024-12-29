@@ -55,12 +55,12 @@ pipeline {
                 script {
                     // Build backend
                     dir("${BACKEND_DIR}") {
-                        bat 'npm run build'  // Use appropriate build script for backend
+                        bat 'npm run'  // Use appropriate build script for backend
                     }
 
                     // Build frontend
                     dir("${FRONTEND_DIR}") {
-                        bat 'npm run build'  // Or use "npm start" if you want to start the frontend server
+                        bat 'npm start'  // Or use "npm start" if you want to start the frontend server
                     }
                 }
             }
