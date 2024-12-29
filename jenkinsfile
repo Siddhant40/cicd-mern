@@ -4,7 +4,7 @@ pipeline {
     environment {
         FRONTEND_DIR = 'frontend'
         BACKEND_DIR = 'backend'
-        SONAR_TOKEN = credentials('SonarQube')  // Make sure your SonarQube token is correctly set in Jenkins credentials
+        SONAR_TOKEN = credentials('SonarQube')  // Ensure your SonarQube token is correctly set in Jenkins credentials
     }
 
     stages {
@@ -33,29 +33,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // SonarQube analysis for frontend
-                    dir("${FRONTEND_DIR}") {
-                        bat """
-                        sonar-scanner ^
-                        -Dsonar.projectKey=Mern-pipe-front ^
-                        -Dsonar.projectName=Mern-pipe-front ^
-                        -Dsonar.sources=. ^
-                        -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=${SONAR_TOKEN}
-                        """
-                    }
-
-                    // SonarQube analysis for backend
-                    dir("${BACKEND_DIR}") {
-                        bat """
-                        sonar-scanner ^
-                        -Dsonar.projectKey=Mern-pipe-back ^
-                        -Dsonar.projectName=Mern-pipe-back ^
-                        -Dsonar.sources=. ^
-                        -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=${SONAR_TOKEN}
-                        """
-                    }
+                    // SonarQube analysis for both frontend and backend together in a single project
+                    bat """
+                    sonar-scanner ^
+                    -Dsonar.projectKey=Mern-pipe ^
+                    -Dsonar.projectName=Mern-pipe ^
+                    -Dsonar.sources=${FRONTEND_DIR},${BACKEND_DIR} ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=${SONAR_TOKEN}
+                    """
                 }
             }
         }
@@ -65,12 +51,12 @@ pipeline {
                 script {
                     // Build backend
                     dir("${BACKEND_DIR}") {
-                        bat 'npm run build'  // Make sure this is the correct script (like "npm run build")
+                        bat 'npm run build'  // Use appropriate build script for backend
                     }
 
                     // Build frontend
                     dir("${FRONTEND_DIR}") {
-                        bat 'npm run build'  // Or "npm start" if you want to start the server
+                        bat 'npm run build'  // Or use "npm start" if you want to start the frontend server
                     }
                 }
             }
