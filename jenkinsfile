@@ -35,7 +35,6 @@ pipeline {
                 script {
                     // SonarQube analysis for both frontend and backend together in a single project
                     bat """
-                    sonar-scanner ^
                     -Dsonar.projectKey=Mern-pipe ^
                     -Dsonar.projectName=Mern-pipe ^
                     -Dsonar.sources=${FRONTEND_DIR},${BACKEND_DIR} ^
