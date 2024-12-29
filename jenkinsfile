@@ -1,0 +1,76 @@
+pipeline{
+    agent any
+    environment{
+        FRONTEND_DIR='frontend'
+        BACKEND_DIR='backend'
+        SONAR_TOKEN = credentials('SonarQube')
+    }
+    stages{
+        stage('Checkout'){
+            steps{
+                checkout scm
+            }
+        }
+        stage('Install Dependencies- Frontend'){
+            dir("${FRONTEND_DIR}"){
+                bat 'npm install'
+            }
+        }
+        stage('Install Dependencies- Backend'){
+            dir("${BACKEND_DIR}"){
+                bat 'npm install'
+            }
+        }
+        stage('SonarQube Analysis'){
+            steps{
+                script{
+                    dir("${FRONTEND_DIR}"){
+                        bat'''
+                        sonar-scanner^
+                        -Dsonar.projectKey=Mern-pipe^
+                        -Dsonar.projectName=Mern-pipe^
+                        -Dsonar.sources=.^
+                        -Dsonar.host.url=http://localhost:9000/^
+                        -Dsonar.token=%SONAR_TOKEN%
+                        '''
+                    }
+                    dir("${BACKEND_DIR}"){
+                        bat'''
+                        sonar-scanner^
+                        -Dsonar.projectKey=Mern-pipe^
+                        -Dsonar.projectName=Mern-pipe^
+                        -Dsonar.sources=.^
+                        -Dsonar.host.url=http://localhost:9000/^
+                        -Dsonar.token=%SONAR_TOKEN%
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Build'){
+            steps{
+                script{
+                    dir("${BACKEND_DIR}"){
+                        bat 'npm run'
+                    }
+                    dir("${FRONTEND_DIR}"){
+                        bat 'npm start'
+                    }
+                }
+            }
+        }
+
+    }
+
+}
+post{
+    always{
+         echo 'Pipeline execution finished'
+    }
+    success{
+        echo 'Pipeline executed successfully'
+    }
+    faliure{
+        echo 'Pipleine failed'
+    }
+}
